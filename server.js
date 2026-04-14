@@ -1,5 +1,6 @@
 import app from './src/app.js';
+import env from './src/config/env.js'
 
-app.listen(5000, () => {
-    console.log('Server is up and running on Port', 5000);
+app.listen(env.PORT, () => {
+    console.log('Server is up and running on Port', env.PORT);
 }); 
