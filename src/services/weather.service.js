@@ -3,7 +3,7 @@ import env from "../config/env.js";
 
 const BASE_URL = "https://api.weatherapi.com/v1";
 
-export async function getWeather(cityName) {
+export default async function getWeather(cityName) {
   try {
     const API_KEY = env.WEATHER_API_KEY;
 
