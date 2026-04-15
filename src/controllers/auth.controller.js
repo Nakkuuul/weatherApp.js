@@ -37,20 +37,13 @@ export async function register(req, res) {
       password: hashedPassword,
     });
 
-    const token = jwt.sign(
-      {
-        id: user._id,
-      },
-      env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      },
-    );
-
     return res.status(201).json({
       success: true,
       message: "User Registered Successfully",
-      token: token,
+      user: {
+        id: user._id,
+        email: user.email,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -107,7 +100,6 @@ export async function login(req, res) {
       success: true,
       message: "User Validated Successfully",
       user: {
-        id: validateUser._id,
         email: validateUser.email,
       },
       token: token,
