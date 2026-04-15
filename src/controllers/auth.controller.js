@@ -14,14 +14,16 @@ export async function register(req, res) {
       });
     }
 
+    const emailNormalized = email.toLowerCase().trim();
+
     const isAlreadyRegistered = await AuthModel.findOne({
-      email,
+      email: emailNormalized,
     });
 
     if (isAlreadyRegistered) {
       return res.status(409).json({
         success: false,
-        message: "Username or Email already exist",
+        message: "Email already exist",
       });
     }
 
@@ -31,7 +33,7 @@ export async function register(req, res) {
       .digest("hex");
 
     const user = await AuthModel.create({
-      email,
+      email: emailNormalized,
       password: hashedPassword,
     });
 
@@ -48,6 +50,66 @@ export async function register(req, res) {
     return res.status(201).json({
       success: true,
       message: "User Registered Successfully",
+      token: token,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+}
+
+export async function login(req, res) {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password both are required",
+      });
+    }
+
+    const emailNormalized = email.toLowerCase().trim();
+
+    const validateUser = await AuthModel.findOne({ email: emailNormalized });
+
+    if (!validateUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    const hashedPassword = crypto
+      .createHash("sha256")
+      .update(password)
+      .digest("hex");
+
+    if (hashedPassword !== validateUser.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: validateUser._id,
+      },
+      env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User Validated Successfully",
+      user: {
+        id: validateUser._id,
+        email: validateUser.email,
+      },
       token: token,
     });
   } catch (error) {
